@@ -8,9 +8,9 @@ class Pipe:
     VELOCITY_X = 5
     WIDTH = 80
 
-    def __init__(self, x, window_height, color=(0, 200, 0)):
-        self.x = x
+    def __init__(self, window_height, x, color=(0, 200, 0)):
         self.window_height = window_height
+        self.x = x
 
         self.top_pipe_bottom = None
         self.bottom_pipe_top = None

@@ -8,8 +8,8 @@ from pipe import Pipe
 
 pygame.init()
 
-WINDOW_WIDTH = 800
-WINDOW_HEIGHT = 800
+WINDOW_WIDTH = 1000
+WINDOW_HEIGHT = 700
 
 FONT = pygame.font.Font("freesansbold.ttf", 32)
 
@@ -66,7 +66,7 @@ def main(genomes, config):
 
     while len(birds_list) > 0:
 
-        clock.tick(60)
+        clock.tick(180)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -77,9 +77,6 @@ def main(genomes, config):
             genomes_list[x].fitness += 0.1
 
             next_pipe = get_next_pipe(bird, pipes)
-
-            next_pipe.color = (255, 0, 0)
-
             
 
             output = neural_networks_list[x].activate(
@@ -87,8 +84,7 @@ def main(genomes, config):
                     bird.y,
                     bird.velocity_y,
                     next_pipe.x - bird.x,
-                    next_pipe.top_pipe_bottom,
-                    next_pipe.bottom_pipe_top,
+                    next_pipe.bottom_pipe_top
                 )
             )
 
@@ -106,39 +102,42 @@ def main(genomes, config):
 
                 for genome in genomes_list:
                     genome.fitness += 5
-            
-            if pipe.passed:
-                pipe.color = (0, 200, 0)
 
-        for x, bird in enumerate(birds_list):
+        for x in range(len(birds_list) - 1, -1, -1):
+            bird = birds_list[x]
             bird_rect = bird.get_rect()
 
+            dead = False
+
             if bird.y - bird.RADIUS <= 0 or bird.y + bird.RADIUS >= WINDOW_HEIGHT:
+                dead = True
+
+            if not dead:
+                for pipe in pipes:
+                    top_rect, bottom_rect = pipe.get_rects()
+
+                    if (
+                        bird_rect.colliderect(top_rect)
+                        or bird_rect.colliderect(bottom_rect)
+                    ):
+                        dead = True
+                        break
+
+            if dead:
                 genomes_list[x].fitness -= 1
                 neural_networks_list.pop(x)
                 birds_list.pop(x)
                 genomes_list.pop(x)
 
-            for pipe in pipes:
-                top_rect, bottom_rect = pipe.get_rects()
-
-                if bird_rect.colliderect(top_rect) or bird_rect.colliderect(
-                    bottom_rect
-                ):
-                    genomes_list[x].fitness -= 1
-                    neural_networks_list.pop(x)
-                    birds_list.pop(x)
-                    genomes_list.pop(x)
-
-        if pipes[-1].x < WINDOW_WIDTH - 400:
+        if pipes[-1].x < WINDOW_WIDTH - 500:
             pipes.append(Pipe(WINDOW_HEIGHT, WINDOW_WIDTH))
 
         pipes = [pipe for pipe in pipes if pipe.x + pipe.WIDTH > 0]
 
+        draw_window(window, birds_list, pipes, score)
+
         if score >= 100:
             break
-
-        draw_window(window, birds_list, pipes, score)
 
 
 def run_neat(config_path):
@@ -161,7 +160,7 @@ def run_neat(config_path):
     with open("best_genome.pkl", "wb") as file:
         pickle.dump(winner, file)
 
-        print("Saved final genome with fitness:", winner.fitness)
+    print("Saved final genome with fitness:", winner.fitness)
 
 
 if __name__ == "__main__":

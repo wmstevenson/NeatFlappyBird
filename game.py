@@ -8,8 +8,8 @@ from pipe import Pipe
 
 pygame.init()
 
-WINDOW_WIDTH = 600
-WINDOW_HEIGHT = 600
+WINDOW_WIDTH = 1000
+WINDOW_HEIGHT = 700
 
 FONT = pygame.font.Font("freesansbold.ttf", 32)
 
@@ -112,8 +112,7 @@ def main():
                 (
                     ai_bird.y,
                     ai_bird.velocity_y,
-                    next_pipe.x - ai_bird.x,
-                    next_pipe.top_pipe_bottom,
+                    next_pipe.x - bird.x,
                     next_pipe.bottom_pipe_top,
                 )
             )
@@ -139,7 +138,7 @@ def main():
         if ai_alive and collision(ai_bird, pipes):
             ai_alive = False
 
-        if pipes[-1].x < WINDOW_WIDTH - 400:
+        if pipes[-1].x < WINDOW_WIDTH - 500:
             pipes.append(Pipe(WINDOW_HEIGHT, WINDOW_WIDTH))
 
         pipes = [pipe for pipe in pipes if pipe.x + pipe.WIDTH > 0]
