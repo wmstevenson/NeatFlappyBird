@@ -1,7 +1,7 @@
 # NeatFlappyBird
 
 <p align="center">
-  <img src="demo.gif" alt="NEAT training demo" width="600">
+  <img src="demo.gif" alt="NEAT training demo" width="300">
 </p>
 
 A Flappy Bird clone built with [pygame-ce](https://pyga.me/) where a Neural Network
