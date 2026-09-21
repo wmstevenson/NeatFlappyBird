@@ -8,19 +8,24 @@ from pipe import Pipe
 
 pygame.init()
 
-WINDOW_WIDTH = 1000
-WINDOW_HEIGHT = 700
+IMAGE = pygame.image.load("bg.png")
 
-FONT = pygame.font.Font("freesansbold.ttf", 32)
+IMAGE_WIDTH, IMAGE_HEIGHT = IMAGE.get_size()
+WINDOW_WIDTH = int(IMAGE_WIDTH * 1.5)
+WINDOW_HEIGHT = int(IMAGE_HEIGHT * 1.5)
+
+FONT = pygame.font.Font("freesansbold.ttf", 40)
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("Flappy Bird")
+
+background_image = pygame.transform.scale(IMAGE.convert_alpha(), (WINDOW_WIDTH, WINDOW_HEIGHT))
 
 clock = pygame.time.Clock()
 
 
 def draw_window(window, bird, ai_bird, ai_alive, pipes, score):
-    window.fill((0, 0, 0))
+    window.blit(background_image, (0, 0))
 
 
     if ai_alive:
@@ -32,7 +37,7 @@ def draw_window(window, bird, ai_bird, ai_alive, pipes, score):
         pipe.draw(window)
 
     text = FONT.render(str(score), True, (255, 255, 255))
-    text_rect = text.get_rect(center=(WINDOW_WIDTH / 2, 50))
+    text_rect = text.get_rect(center=(WINDOW_WIDTH / 2, 75))
     window.blit(text, text_rect)
 
     pygame.display.update()
@@ -55,7 +60,7 @@ def collision(bird, pipes):
 
 def get_next_pipe(bird, pipes):
     for pipe in pipes:
-        if pipe.x + pipe.WIDTH > bird.x:
+        if pipe.x + pipe.pipe_width > bird.x:
             return pipe
 
     return pipes[0]
@@ -86,9 +91,9 @@ def main():
     neural_network = load_ai(config_path, genome_path)
 
     bird = Bird(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
-    ai_bird = Bird(WINDOW_WIDTH / 2 - 30, WINDOW_HEIGHT / 2, color=(255, 0, 255))
+    ai_bird = Bird(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, color=(255, 0, 255))
 
-    pipes = [Pipe(WINDOW_HEIGHT, WINDOW_WIDTH)]
+    pipes = [Pipe(WINDOW_WIDTH, WINDOW_HEIGHT, int(WINDOW_WIDTH * 1.5))]
     score = 0
 
     player_alive = True
@@ -112,7 +117,7 @@ def main():
                 (
                     ai_bird.y,
                     ai_bird.velocity_y,
-                    next_pipe.x - bird.x,
+                    next_pipe.x - ai_bird.x,
                     next_pipe.bottom_pipe_top,
                 )
             )
@@ -128,7 +133,7 @@ def main():
         for pipe in pipes:
             pipe.move()
 
-            if not pipe.passed and pipe.x + pipe.WIDTH < bird.x:
+            if not pipe.passed and pipe.x + pipe.pipe_width < bird.x:
                 pipe.passed = True
                 score += 1
 
@@ -138,10 +143,10 @@ def main():
         if ai_alive and collision(ai_bird, pipes):
             ai_alive = False
 
-        if pipes[-1].x < WINDOW_WIDTH - 500:
-            pipes.append(Pipe(WINDOW_HEIGHT, WINDOW_WIDTH))
+        if pipes[-1].x < WINDOW_WIDTH - int(WINDOW_WIDTH * 250 / 288):
+            pipes.append(Pipe(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH))
 
-        pipes = [pipe for pipe in pipes if pipe.x + pipe.WIDTH > 0]
+        pipes = [pipe for pipe in pipes if pipe.x + pipe.pipe_width > 0]
 
         draw_window(window, bird, ai_bird, ai_alive, pipes, score)
 

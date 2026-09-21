@@ -8,19 +8,24 @@ from pipe import Pipe
 
 pygame.init()
 
-WINDOW_WIDTH = 1000
-WINDOW_HEIGHT = 700
+IMAGE = pygame.image.load("bg.png")
 
-FONT = pygame.font.Font("freesansbold.ttf", 32)
+IMAGE_WIDTH, IMAGE_HEIGHT = IMAGE.get_size()
+WINDOW_WIDTH = int(IMAGE_WIDTH * 1.5)
+WINDOW_HEIGHT = int(IMAGE_HEIGHT * 1.5)
+
+FONT = pygame.font.Font("freesansbold.ttf", 40)
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("Flappy Bird")
+
+background_image = pygame.transform.scale(IMAGE.convert_alpha(), (WINDOW_WIDTH, WINDOW_HEIGHT))
 
 clock = pygame.time.Clock()
 
 
 def draw_window(window, birds_list, pipes, score):
-    window.fill((0, 0, 0))
+    window.blit(background_image, (0, 0))
 
     for bird in birds_list:
         bird.draw(window)
@@ -29,7 +34,7 @@ def draw_window(window, birds_list, pipes, score):
         pipe.draw(window)
 
     text = FONT.render(str(score), True, (255, 255, 255))
-    text_rect = text.get_rect(center=(WINDOW_WIDTH / 2, 50))
+    text_rect = text.get_rect(center=(WINDOW_WIDTH / 2, 75))
     window.blit(text, text_rect)
 
     pygame.display.update()
@@ -37,7 +42,7 @@ def draw_window(window, birds_list, pipes, score):
 
 def get_next_pipe(bird, pipes):
     for pipe in pipes:
-        if pipe.x + pipe.WIDTH > bird.x:
+        if pipe.x + pipe.pipe_width > bird.x:
             return pipe
 
     return pipes[0]
@@ -59,14 +64,12 @@ def main(genomes, config):
         birds_list.append(Bird(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
         genomes_list.append(genome)
 
-    pipes = [Pipe(WINDOW_HEIGHT, WINDOW_WIDTH)]
+    pipes = [Pipe(WINDOW_WIDTH, WINDOW_HEIGHT, int(WINDOW_WIDTH * 1.5))]
     score = 0
-
-    run = True
 
     while len(birds_list) > 0:
 
-        clock.tick(180)
+        clock.tick(240)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -96,7 +99,7 @@ def main(genomes, config):
         for pipe in pipes:
             pipe.move()
 
-            if not pipe.passed and pipe.x + pipe.WIDTH < birds_list[0].x:
+            if not pipe.passed and pipe.x + pipe.pipe_width < birds_list[0].x:
                 pipe.passed = True
                 score += 1
 
@@ -129,14 +132,16 @@ def main(genomes, config):
                 birds_list.pop(x)
                 genomes_list.pop(x)
 
-        if pipes[-1].x < WINDOW_WIDTH - 500:
-            pipes.append(Pipe(WINDOW_HEIGHT, WINDOW_WIDTH))
+        if pipes[-1].x < WINDOW_WIDTH - int(WINDOW_WIDTH * 250 / 288):
+            pipes.append(Pipe(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH))
 
-        pipes = [pipe for pipe in pipes if pipe.x + pipe.WIDTH > 0]
+        pipes = [pipe for pipe in pipes if pipe.x + pipe.pipe_width > 0]
 
         draw_window(window, birds_list, pipes, score)
 
         if score >= 100:
+            for genome in genomes_list:
+                genome.fitness += 10000
             break
 
 
